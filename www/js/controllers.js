@@ -51,5 +51,26 @@ angular.module('app.controllers', [])
     ];
 })
 
-.controller('StocksCtrl', function($scope, $stateParams) {
-});
+.controller('StocksCtrl',['$scope','$stateParams','$http','stockDataService' ,function($scope, $stateParams,$http,stockDataService) {
+  $scope.ticker = $stateParams.stockTicker;
+  $scope.chartView = 1;
+  $scope.$on("$ionicView.afterEnter",function(){
+    getPriceData();
+   
+  });
+  $scope.chartViewFunc = function(n) {
+       $scope.chartView = n;
+     };
+
+  function getPriceData(){
+    $scope.todayDate="&start_date="+moment().format("YYYY-MM-DD");
+    $scope.todayDate="&start_date=2017-12-01"
+    var promise=stockDataService.getPriceData($scope.ticker,$scope.todayDate);
+  promise.then(function(data){
+    
+    $scope.stockPriceDetail=data;
+    console.log(data)
+  });
+  }
+ 
+}]);

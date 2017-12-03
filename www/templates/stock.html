@@ -4,28 +4,55 @@
 
     <div class="buttons" side="left">
       <div class="button button-clear">
-        <h6>Company Name Inc.</h6>
+        <h6>{{stockPriceDetail.name}}</h6>
       </div>
     </div>
 
-    <h2 class="title button-left button-right">1000.5000</h2>
+    <h2 class="title button-left button-right"></h2>
 
     <div class="buttons" side="right">
       <div class="button button-clear">
-        <h6>+100.0000%</h6>
+        <h6>{{stockPriceDetail.data[0][4]}}</h6>
       </div>
     </div>
 
   </div>
 
   <ion-content class="has-subheader">
+  <div class="button-bar">
+      <a ng-click="chartViewFunc(1)" ng-class="chartView == 1 ? 'active' : ''" class="button">5D</a>
+      <a ng-click="chartViewFunc(2)" ng-class="chartView == 2 ? 'active' : ''" class="button">3M</a>
+      <a ng-click="chartViewFunc(3)" ng-class="chartView == 3 ? 'active' : ''" class="button">6M</a>
+      <a ng-click="chartViewFunc(4)" ng-class="chartView == 4 ? 'active' : ''" class="button">Year</a>
+      <a ng-click="chartViewFunc(5)" ng-class="chartView == 5 ? 'active' : ''" class="button">Max</a>
+    </div>
 
     <div class="card">
       <div class="item item-divider">Market Data</div>
       <div class="row row-center">
-        <div class="col">Data: </div>
-        <div class="col">1000.5000</div>
-      </div>
+   	<div class="col">Date:</div>
+   	<div class="col">{{stockPriceDetail.data[0][0]}}</div>
+   </div>
+   <div class="row row-center">
+   	<div class="col">High</div>
+   	<div class="col">{{stockPriceDetail.data[0][1]}}</div>
+   </div>
+   <div class="row row-center">
+   	<div class="col">Low</div>
+   	<div class="col">{{stockPriceDetail.data[0][2]}}</div>
+   </div>
+   <div class="row row-center">
+   	<div class="col">Last</div>
+   	<div class="col">{{stockPriceDetail.data[0][3]}}</div>
+   </div>
+    <div class="row row-center">
+   	<div class="col">Previous Day Price</div>
+   	<div class="col">{{stockPriceDetail.data[0][4]}}</div>
+   </div>
+   <div class="row row-center">
+   	<div class="col">Volume</div>
+   	<div class="col">{{stockPriceDetail.data[0][5]}}</div>
+   </div>
     </div>
 
     <div class="card">
