@@ -51,15 +51,17 @@ angular.module('app.controllers', [])
     ];
 })
 
-.controller('StocksCtrl',['$scope','$stateParams','$http','stockDataService' ,function($scope, $stateParams,$http,stockDataService) {
+.controller('StocksCtrl',['$scope','$stateParams','$http','$window','stockDataService','chartDataService' ,function($scope, $stateParams,$http,$window,stockDataService,chartDataService) {
   $scope.ticker = $stateParams.stockTicker;
   $scope.chartView = 1;
   $scope.$on("$ionicView.afterEnter",function(){
     getPriceData();
+    getChartData();
    
   });
   $scope.chartViewFunc = function(n) {
        $scope.chartView = n;
+       getChartData();
      };
 
   function getPriceData(){
@@ -69,8 +71,135 @@ angular.module('app.controllers', [])
   promise.then(function(data){
     
     $scope.stockPriceDetail=data;
-    console.log(data)
+   
   });
   }
+  function getChartData() {
+    if($scope.chartView == 5){
+       
+         $scope.appendString="" ;
+       }else if($scope.chartView == 4){
+         var r=moment().subtract(1, 'years').format("YYYY-MM-DD");
+               $scope.appendString="&start_date=" +r;
+               console.log($scope.appendString)
+
+       }else if($scope.chartView == 3){
+        var r=moment().subtract(6, 'months').format("YYYY-MM-DD");
+               $scope.appendString="&start_date=" +r;
+         console.log($scope.appendString)
+       
+       }else if($scope.chartView == 2){
+        var r=moment().subtract(3, 'months').format("YYYY-MM-DD");
+        console.log(r)
+        $scope.appendString="&start_date=" +r;
+        console.log($scope.appendString)
+       }else if($scope.chartView == 1){
+
+        var r=moment().subtract(5, 'days').format("YYYY-MM-DD");
+        $scope.appendString="&start_date=" +r;
+
+        console.log($scope.appendString)
+       }
+
+      var promise = chartDataService.getHistoricalData($scope.ticker, $scope.appendString, $scope.todayDate);
+      promise.then(function(data) {
+      
  
+        $scope.myData = JSON.parse(data)
+         .map(function(series) {
+           series.values = series.values.map(function(d) {      return  {x: d[0], y: d[1] }; });
+           return series;
+           console.log(series)
+         });
+        
+       
+      });
+    }
+   
+  var xTickFormat = function(d) {
+    var dx = $scope.myData[0].values[d] && $scope.myData[0].values[d].x || 0;
+    if (dx > 0) {
+      return d3.time.format('%x')(new Date(dx));
+    }
+    return null;
+  };
+        
+  var x2TickFormat = function(d) {
+    var dx = $scope.myData[0].values[d] && $scope.myData[0].values[d].x || 0;
+    return d3.time.format('%x')(new Date(dx))
+  };
+
+  
+  var y1TickFormat = function(d) {
+    return d3.format(',f')(d);
+  };
+  
+  var y2TickFormat = function(d) { 
+    return '$' + d3.format(',.2f')(d) 
+  };
+  
+  var y3TickFormat = function(d) {
+    return d3.format(',f')(d);
+  };
+  
+  var y4TickFormat = function(d) { 
+    return '$' + d3.format(',.2f')(d) 
+  };            
+  
+  var xValueFunction = function(d, i) { 
+    return i;
+  };
+        console.log($scope.myData)
+  $scope.chartOptions = {
+    chartType: 'linePlusBarWithFocusChart',
+    data: 'myData',
+    
+    margin: {top: 30, right: 60, bottom: 50, left: 70},
+    useInteractiveGuideline: true,
+    xValue: xValueFunction,
+    xAxisTickFormat: xTickFormat,
+    x2AxisTickFormat: x2TickFormat,
+    y1AxisTickFormat: y1TickFormat,
+    y2AxisTickFormat: y2TickFormat,
+    y3AxisTickFormat: y3TickFormat,
+    y4AxisTickFormat: y4TickFormat,
+    transitionDuration: 50,
+    showLegend:true
+  }
+  
+
+
+ /*  $scope.chartOptions = {
+      chartType: 'linePlusBarWithFocusChart',
+      data: 'myData',
+     height: 450,
+                margin : {
+                    top: 20,
+                    right: 20,
+                    bottom: 60,
+                    left: 40
+                },
+      
+      
+      interpolate: "cardinal",
+      useInteractiveGuideline: true,
+      yShowMaxMin: true,
+      tooltips: true,
+      showLegend: true,
+      useVoronoi: false,
+      xShowMaxMin: true,
+      showXAxis:true,
+      xValue: xValueFunction,
+      xAxisTickFormat: xTickFormat,
+      x2AxisTickFormat: x2TickFormat,
+      y1AxisTickFormat: y1TickFormat,
+      y2AxisTickFormat: y2TickFormat,
+      y3AxisTickFormat: y3TickFormat,
+      y4AxisTickFormat: y4TickFormat,
+      y1AxisLabel:'Price',
+      y3AxisLabel:'Volume',
+      transitionDuration: 50,
+      
+   };
+ */
 }]);
