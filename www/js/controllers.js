@@ -51,8 +51,10 @@ angular.module('app.controllers', [])
     ];
 })
 
-.controller('StocksCtrl',['$scope','$stateParams','$http','$window','stockDataService','chartDataService' ,function($scope, $stateParams,$http,$window,stockDataService,chartDataService) {
+.controller('StocksCtrl',['$scope','$stateParams','$http','$window','stockDataService','chartDataService','$ionicPopup','notesService' ,function($scope, $stateParams,$http,$window,stockDataService,chartDataService,$ionicPopup,notesService) {
   $scope.ticker = $stateParams.stockTicker;
+  $scope.todayDate=moment().format("YYYY-MM-DD");
+
   $scope.chartView = 1;
   $scope.$on("$ionicView.afterEnter",function(){
     getPriceData();
@@ -65,9 +67,9 @@ angular.module('app.controllers', [])
      };
 
   function getPriceData(){
-    $scope.todayDate="&start_date="+moment().format("YYYY-MM-DD");
-    $scope.todayDate="&start_date=2017-12-01"
-    var promise=stockDataService.getPriceData($scope.ticker,$scope.todayDate);
+    $scope.todayDateString="&start_date="+moment().format("YYYY-MM-DD");
+    $scope.todayDateString="&start_date=2017-12-01"
+    var promise=stockDataService.getPriceData($scope.ticker,$scope.todayDateString);
   promise.then(function(data){
     
     $scope.stockPriceDetail=data;
@@ -81,27 +83,27 @@ angular.module('app.controllers', [])
        }else if($scope.chartView == 4){
          var r=moment().subtract(1, 'years').format("YYYY-MM-DD");
                $scope.appendString="&start_date=" +r;
-               console.log($scope.appendString)
+             
 
        }else if($scope.chartView == 3){
         var r=moment().subtract(6, 'months').format("YYYY-MM-DD");
                $scope.appendString="&start_date=" +r;
-         console.log($scope.appendString)
+         
        
        }else if($scope.chartView == 2){
         var r=moment().subtract(3, 'months').format("YYYY-MM-DD");
-        console.log(r)
+        
         $scope.appendString="&start_date=" +r;
-        console.log($scope.appendString)
+        
        }else if($scope.chartView == 1){
 
         var r=moment().subtract(5, 'days').format("YYYY-MM-DD");
         $scope.appendString="&start_date=" +r;
 
-        console.log($scope.appendString)
+       
        }
 
-      var promise = chartDataService.getHistoricalData($scope.ticker, $scope.appendString, $scope.todayDate);
+      var promise = chartDataService.getHistoricalData($scope.ticker, $scope.appendString, $scope.todayDateString);
       promise.then(function(data) {
       
  
@@ -202,4 +204,72 @@ angular.module('app.controllers', [])
       
    };
  */
+
+ $scope.addNote = function() {
+  console.log($scope.todayDate)
+       $scope.note = {title: 'Note', body: '', date: $scope.todayDate, ticker: $scope.ticker};
+ 
+       var note = $ionicPopup.show({
+         template: '<input type="text" ng-model="note.title" id="stock-note-title"><textarea type="text" ng-model="note.body" id="stock-note-body"></textarea>',
+         title: 'New Note for ' + $scope.ticker,
+         scope: $scope,
+         buttons: [
+           {
+             text: 'Cancel',
+             onTap: function(e) {
+               return;
+             }
+            },
+           {
+             text: '<b>Save</b>',
+             type: 'button-balanced',
+             onTap: function(e) {
+               notesService.addNote($scope.ticker, $scope.note);
+             }
+           }
+         ]
+       });
+ 
+       note.then(function(res) {
+         $scope.stockNotes = notesService.getNotes($scope.ticker);
+       });
+     };
+ 
+     $scope.openNote = function(index, title, body) {
+       $scope.note = {title: title, body: body, date: $scope.todayDate, ticker: $scope.ticker};
+ 
+       var note = $ionicPopup.show({
+         template: '<input type="text" ng-model="note.title" id="stock-note-title"><textarea type="text" ng-model="note.body" id="stock-note-body"></textarea>',
+         title: $scope.note.title,
+         scope: $scope,
+         buttons: [
+           {
+             text: 'Delete',
+             type: 'button-assertive button-small',
+             onTap: function(e) {
+               notesService.deleteNote($scope.ticker, index);
+             }
+           },
+           {
+             text: 'Cancel',
+             type: 'button-small',
+             onTap: function(e) {
+               return;
+             }
+            },
+           {
+             text: '<b>Save</b>',
+             type: 'button-balanced button-small',
+             onTap: function(e) {
+               notesService.deleteNote($scope.ticker, index);
+               notesService.addNote($scope.ticker, $scope.note);
+             }
+           }
+         ]
+       });
+ 
+       note.then(function(res) {
+         $scope.stockNotes = notesService.getNotes($scope.ticker);
+       });
+     };
 }]);

@@ -1,9 +1,9 @@
 angular.module('app.services', [])
 .factory('stockDataService', function($q, $http){
-	var getPriceData=function(ticker,todayDate){
+	var getPriceData=function(ticker,todayDateString){
 
 		var deferred=$q.defer(),
-		url="https://www.quandl.com/api/v3/datasets/SSE/"+ticker+".json?api_key=8D-yP6L3JtwcMJ4a9M1D"+todayDate;
+		url="https://www.quandl.com/api/v3/datasets/SSE/"+ticker+".json?api_key=8D-yP6L3JtwcMJ4a9M1D"+todayDateString;
 		$http.get(url).success(function(json){
 			var jsonData=json.dataset;
 			deferred.resolve(jsonData);
@@ -39,6 +39,21 @@ angular.module('app.services', [])
 
 	return chartDataCache;
 })
+.factory('notesCacheService', function(CacheFactory) {
+ 
+   var notesCache;
+ 
+   if(!CacheFactory.get('notesCache')) {
+     notesCache = CacheFactory('notesCache', {
+       storageMode: 'localStorage'
+     });
+   }
+   else {
+     notesCache = CacheFactory.get('notesCache');
+   }
+ 
+   return notesCache;
+ })
 .factory('chartDataService', function($q, $http,chartDataCacheService) {
 	var getHistoricalData = function(ticker,appendString) {
 		var deferred = $q.defer(),
@@ -120,5 +135,38 @@ angular.module('app.services', [])
 		getHistoricalData: getHistoricalData
 	};
 })
+.factory('notesService', function(notesCacheService) {
+ 
+   return {
+ 
+     getNotes: function(ticker) {
+       return notesCacheService.get(ticker);
+     },
+ 
+     addNote: function(ticker, note) {
+ 
+       var stockNotes = [];
+ 
+       if(notesCacheService.get(ticker)) {
+         stockNotes = notesCacheService.get(ticker);
+         stockNotes.push(note);
+       }
+       else {
+         stockNotes.push(note);
+       }
+ 
+       notesCacheService.put(ticker, stockNotes);
+     },
+ 
+     deleteNote: function(ticker, index) {
+ 
+       var stockNotes = [];
+ 
+       stockNotes = notesCacheService.get(ticker);
+       stockNotes.splice(index, 1);
+       notesCacheService.put(ticker, stockNotes);
+     }
+   };
+ })
 
 ;
